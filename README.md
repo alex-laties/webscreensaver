@@ -1,7 +1,7 @@
-webscreensaver
+tumblrtv-webscreensaver
 ==============
 
-A screen hack which uses WebKit and works with XScreensaver
+A screen hack which uses WebKit and works with XScreensaver to display TumblrTV!
 
 dependencies
 ------------
@@ -19,8 +19,13 @@ Copy `webscreensaver` into `/usr/lib/xscreensaver` and then edit `~/.xscreensave
     programs:
                   webscreensaver                  \n\
 
-If you wish to set the url:
+You can configure `webscreensaver` with a list of tags to select either by using the `-tags` option in `~/.xscreensaver` (i.e. `-tags hello,goodbye,thirdtag` or by listing tags in `~/.tags`:
+```
+hello
+goodbye
+thirdtag
+```
 
-    -url <url_to_the_page_you_want>
-    
+
+`webscreensaver` will always choose a random tag from the union of command line and config file tags.
 Otherwise it will choose a random one.

@@ -3,6 +3,7 @@
 # WebScreensaver - Make any web page a screensaver
 
 import os
+import os.path
 import sys
 import random
 import signal
@@ -16,13 +17,31 @@ class WebScreensaver(object):
 	A simple wrapper for WebKit which works as an XScreensaver Hack
 	'''
 	
-	def __init__(self, url='http://www.google.com', window_id=None, scripts=None):
+	def __init__(self, tags='anime,trippy,bill nye,aeiou', window_id=None, scripts=None):
 		self.window_id = window_id
 		self.scripts = scripts
-		self.url = url
+		self.tags = tags
+		if self.tags:
+			self.tags = [i.strip() for i in self.tags.split(',')]
+		else:
+			self.tags = []
 		
+		self.load_tags()
 		self.w = 640
 		self.h = 480
+
+	def load_tags(self):
+		'''Load tags from tagfile'''
+                file = '~/.tags'
+		file = os.path.expanduser(file)
+		if not os.path.exists(file):
+			print 'No tags file... skipping tag load'
+			return
+
+		with open(file) as f:
+			tags = [i.strip() for i in f]
+
+		self.tags = list(set(tags) | set(self.tags)) 
 
 	def setup_window(self):
 		'''Perform some magic (if needed) to set up a Gtk window'''
@@ -108,7 +127,10 @@ class WebScreensaver(object):
 		signal.signal(signal.SIGTERM, gtk.main_quit)
 
 		self.win.show_all()
-		self.browser.open(self.url)
+		
+		#select tag
+		tag = random.choice(self.tags)
+		self.browser.open("https://tumblr.com/tv/%s" % tag)
 
 	@classmethod
 	def determine_window_id(cls, win_id=None):
@@ -218,30 +240,19 @@ if __name__ == "__main__":
 	import argparse
 	parser = argparse.ArgumentParser(description='WebScreensaver: Run a web page as your screensaver')
 	parser.add_argument('-window-id', help='XID of Window to draw on')
-	parser.add_argument('-url', help='URL of page to display')
-	parser.add_argument('-choose', help='Select a favourite')
-	parser.add_argument('-list', action='store_true', help='List favourites')
+	parser.add_argument('-tags', help='A comma-separated list of tags to use on tumblr')
 	args = parser.parse_args()
-
-	if args.list:
-		WebHacks.print_list()
-		sys.exit(0)
 
 	# I believe that WebKit likes threads
 	gobject.threads_init()
 
-	url, scripts = None, None
+	tags, scripts = None, None
 
-	if args.url:
-		url = args.url
-	else:
-		hack = WebHacks.determine_screensaver(args.choose)
-		url, scripts = hack.url, hack.scripts
+	if args.tags:
+		tags = args.tags
 
 	saver = WebScreensaver(
-		url=url,
 		window_id=WebScreensaver.determine_window_id(args.window_id),
-		scripts=scripts
 	)
 	saver.setup()
 
